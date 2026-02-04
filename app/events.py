@@ -65,14 +65,11 @@ def log_loop(last_checked_block, check_interval):
                 start_batch_block = last_checked_block + 1
                 last_batch_block = last_checked_block + config['BLOCK_SCANNER_BATCH_SIZE']
                 logger.warning(f"Checking blocks {start_batch_block} - {last_batch_block}") 
-                batch_time = time.time()
                 batch = w3.batch_requests()
                 for qq in range(config['BLOCK_SCANNER_BATCH_SIZE']):
                     batch.add(w3.eth.get_block(start_batch_block + qq, True))
                 responses = batch.execute()
                 assert len(responses) == config['BLOCK_SCANNER_BATCH_SIZE']
-                batch_get_time = time.time()
-                logger.warning(f"Get batch results: {batch_get_time - batch_time}")
 
 #################### internal transaction detection part ####################
                 # account_fragments = {addr[2:].lower() for addr in list_accounts} # for internal transaction check
@@ -96,8 +93,8 @@ def log_loop(last_checked_block, check_interval):
                                 ((w3.eth.block_number - last_batch_block) < 40)):
                                 drain_account.delay(config["COIN_SYMBOL"], transaction['to'])
                 
-                    classic_trx_time = time.time()
-                    logger.warning(f"Check classic transactions: {batch_get_time - classic_trx_time}")
+                    
+                    
 
                 for token in config['TOKENS'][config["CURRENT_OP_NETWORK"]].keys():
                     token_instance  = Token(token)
@@ -112,7 +109,6 @@ def log_loop(last_checked_block, check_interval):
                                 token_instance.provider.to_checksum_address(transaction['to']) in list_accounts) and 
                                 ((w3.eth.block_number - last_batch_block) < 40)):
                                 drain_account.delay(token, token_instance.provider.to_checksum_address(transaction['to']))
-                logger.warning(f"Check token transactions: {classic_trx_time - time.time()}")
 
 #################### internal transaction detection part ####################
                     # start_t = time.time()
